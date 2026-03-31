@@ -1,0 +1,327 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  phone         String     @unique
+  name          String
+  password      String
+  profileImage  String?
+  address       String?
+  latitude      Float?
+  longitude     Float?
+  role          UserRole   @default(CUSTOMER)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  // Relations
+  orders        Order[]
+  ratings       Rating[]
+  notifications Notification[]
+  addresses     Address[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model Store {
+  id            String     @id @default(cuid())
+  name          String
+  phone         String     @unique
+  email         String?
+  address       String
+  latitude      Float
+  longitude     Float
+  category      StoreCategory
+  isRegistered  Boolean    @default(false)
+  ownerId       String?    // For registered stores
+  owner         User?      @relation("StoreOwner", fields: [ownerId], references: [id])
+  products      Product[]
+  orders        OrderItem[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([category])
+  @@index([ownerId])
+}
+
+model StoreOwner {
+  id            String     @id @default(cuid())
+  userId        String     @unique
+  businessName  String
+  businessRegNo String?
+  verified      Boolean    @default(false)
+  stores        Store[]
+  createdAt     DateTime   @default(now())
+}
+
+model Product {
+  id            String     @id @default(cuid())
+  name          String
+  description   String?
+  image         String?
+  sector        ProductSector
+  storeId       String
+  store         Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  basePrice     Float
+  deliveryFee   Float      @default(0)
+  availability  Boolean    @default(true)
+  quantity      Int?       // For registered stores
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  orderItems    OrderItem[]
+
+  @@index([storeId])
+  @@index([sector])
+  @@index([name])
+}
+
+model Order {
+  id            String     @id @default(cuid())
+  customerId    String
+  customer      User       @relation(fields: [customerId], references: [id])
+  riderId       String?
+  rider         Rider?     @relation(fields: [riderId], references: [id])
+  
+  items         OrderItem[]
+  deliveryAddress String
+  deliveryLat   Float
+  deliveryLng   Float
+  
+  subtotal      Float
+  deliveryFee   Float
+  total         Float
+  
+  status        OrderStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod @default(FLUTTERWAVE)
+  paymentRef    String?
+  
+  trackingUpdates TrackingUpdate[]
+  notifications  Notification[]
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  estimatedDelivery DateTime?
+
+  @@index([customerId])
+  @@index([riderId])
+  @@index([status])
+}
+
+model OrderItem {
+  id            String     @id @default(cuid())
+  orderId       String
+  order         Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product    @relation(fields: [productId], references: [id])
+  storeId       String
+  store         Store      @relation(fields: [storeId], references: [id])
+  
+  quantity      Int
+  pricePerUnit  Float
+  total         Float
+  
+  createdAt     DateTime   @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Rider {
+  id            String     @id @default(cuid())
+  phone         String     @unique
+  name          String
+  email         String     @unique
+  password      String
+  profileImage  String?
+  
+  latitude      Float?
+  longitude     Float?
+  isAvailable   Boolean    @default(true)
+  rating        Float      @default(5)
+  
+  orders        Order[]
+  earnings      Earning[]
+  rideHistory   RideHistory[]
+  documents     RiderDocument[]
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([phone])
+  @@index([isAvailable])
+}
+
+model Earning {
+  id            String     @id @default(cuid())
+  riderId       String
+  rider         Rider      @relation(fields: [riderId], references: [id])
+  orderId       String?
+  amount        Float
+  date          DateTime   @default(now())
+
+  @@index([riderId])
+  @@index([date])
+}
+
+model RideHistory {
+  id            String     @id @default(cuid())
+  riderId       String
+  rider         Rider      @relation(fields: [riderId], references: [id])
+  pickupLocation String
+  dropLocation  String
+  startTime     DateTime
+  endTime       DateTime?
+  distance      Float?
+
+  @@index([riderId])
+}
+
+model RiderDocument {
+  id            String     @id @default(cuid())
+  riderId       String
+  rider         Rider      @relation(fields: [riderId], references: [id])
+  documentType  String     // License, ID, etc
+  documentUrl   String
+  verified      Boolean    @default(false)
+  expiryDate    DateTime?
+
+  @@index([riderId])
+}
+
+model TrackingUpdate {
+  id            String     @id @default(cuid())
+  orderId       String
+  order         Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  status        OrderStatus
+  latitude      Float
+  longitude     Float
+  message       String?
+  
+  createdAt     DateTime   @default(now())
+
+  @@index([orderId])
+}
+
+model Address {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  label         String     // Home, Work, Other
+  address       String
+  latitude      Float
+  longitude     Float
+  isDefault     Boolean    @default(false)
+  
+  createdAt     DateTime   @default(now())
+
+  @@index([userId])
+}
+
+model Rating {
+  id            String     @id @default(cuid())
+  orderId       String     @unique
+  customerId    String
+  customer      User       @relation(fields: [customerId], references: [id])
+  
+  rating        Int        // 1-5
+  review        String?
+  
+  createdAt     DateTime   @default(now())
+
+  @@index([customerId])
+}
+
+model Notification {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId       String?
+  order         Order?     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  title         String
+  message       String
+  type          NotificationType
+  read          Boolean    @default(false)
+  
+  createdAt     DateTime   @default(now())
+
+  @@index([userId])
+  @@index([orderId])
+}
+
+enum UserRole {
+  CUSTOMER
+  STORE_OWNER
+  ADMIN
+}
+
+enum StoreCategory {
+  EATABLES
+  CLOTHING
+  ELECTRONICS
+  HOUSEHOLD
+  HEALTH_BEAUTY
+  MARKET_PRODUCE
+  OTHERS
+}
+
+enum ProductSector {
+  EATABLES
+  CLOTHING
+  ELECTRONICS
+  HOUSEHOLD
+  HEALTH_BEAUTY
+  MARKET_PRODUCE
+  OTHERS
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  RIDER_ASSIGNED
+  RIDER_AT_STORE
+  ITEM_PURCHASED
+  RIDER_DELIVERING
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  FLUTTERWAVE
+  BANK_TRANSFER
+  WALLET
+}
+
+enum NotificationType {
+  ORDER_CREATED
+  RIDER_ASSIGNED
+  RIDER_AT_STORE
+  RIDER_EN_ROUTE
+  DELIVERY_COMPLETED
+  PAYMENT_RECEIVED
+  CANCELLATION
+  WARNING
+  INFO
+}

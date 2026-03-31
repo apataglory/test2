@@ -1,0 +1,46 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build -- --webpack",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "nodeVersion": "20.x",
+  "env": [
+    {
+      "key": "DATABASE_URL",
+      "description": "PostgreSQL connection string",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "JWT_SECRET",
+      "description": "JWT secret key for authentication",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY",
+      "description": "Flutterwave public API key",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "FLUTTERWAVE_SECRET_KEY",
+      "description": "Flutterwave secret API key",
+      "value": "",
+      "type": "secret"
+    },
+    {
+      "key": "NEXT_PUBLIC_APP_URL",
+      "description": "Application URL",
+      "value": "",
+      "type": "plain"
+    },
+    {
+      "key": "NEXT_PUBLIC_API_URL",
+      "description": "API endpoint URL",
+      "value": "",
+      "type": "plain"
+    }
+  ]
+}
