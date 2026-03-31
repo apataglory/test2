@@ -4,42 +4,24 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "env": [
-    {
-      "key": "DATABASE_URL",
-      "description": "PostgreSQL connection string",
-      "value": "",
-      "type": "secret"
+  "env": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL connection string"
     },
-    {
-      "key": "JWT_SECRET",
-      "description": "JWT secret key for authentication",
-      "value": "",
-      "type": "secret"
+    "JWT_SECRET": {
+      "description": "JWT secret key for authentication"
     },
-    {
-      "key": "NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY",
-      "description": "Flutterwave public API key",
-      "value": "",
-      "type": "secret"
+    "NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY": {
+      "description": "Flutterwave public API key"
     },
-    {
-      "key": "FLUTTERWAVE_SECRET_KEY",
-      "description": "Flutterwave secret API key",
-      "value": "",
-      "type": "secret"
+    "FLUTTERWAVE_SECRET_KEY": {
+      "description": "Flutterwave secret API key"
     },
-    {
-      "key": "NEXT_PUBLIC_APP_URL",
-      "description": "Application URL",
-      "value": "",
-      "type": "plain"
+    "NEXT_PUBLIC_APP_URL": {
+      "description": "Application URL"
     },
-    {
-      "key": "NEXT_PUBLIC_API_URL",
-      "description": "API endpoint URL",
-      "value": "",
-      "type": "plain"
+    "NEXT_PUBLIC_API_URL": {
+      "description": "API endpoint URL"
     }
-  ]
+  }
 }
